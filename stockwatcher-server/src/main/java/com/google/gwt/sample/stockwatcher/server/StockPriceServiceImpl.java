@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
+import javax.servlet.annotation.WebServlet;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -17,10 +18,15 @@ import com.google.gwt.sample.stockwatcher.shared.StockPrice;
 import com.google.gwt.sample.stockwatcher.shared.StockPriceService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-public class StockPriceServiceImpl extends RemoteServiceServlet implements StockPriceService {
+// Here name and the last element of path must be the same value 
+// used in the @RemoteServiceRelativePath used to annotate the service remote 
+// interface (the one that extends RemoteService)
+@WebServlet(name = "stockPrices", urlPatterns = "/app/stockPrices")
+public class StockPriceServiceImpl extends RemoteServiceServlet implements StockPriceService, MapDBConstants {
 	private static final long serialVersionUID = 4192379456341403664L;
 	private static final double MAX_PRICE = 100.0; // $100.00
 	private static final double MAX_PRICE_CHANGE = 0.02; // +/- 2%
+	private static final String SYMBOLS_TREEMAP_NAME = "symbols";
 
 	@Override
 	public StockPrice[] getPrices(String[] symbols) {
@@ -39,7 +45,7 @@ public class StockPriceServiceImpl extends RemoteServiceServlet implements Stock
 	@Override
 	public void saveSymbols(String[] symbols) {
 		DB db = getDB();
-		Map<Integer, String> map = db.treeMap("symbols", Serializer.INTEGER, Serializer.STRING).createOrOpen();
+		Map<Integer, String> map = db.treeMap(SYMBOLS_TREEMAP_NAME, Serializer.INTEGER, Serializer.STRING).createOrOpen();
 		map.clear();
 		int cnt = 0;
 		for(String symbol : symbols) {
@@ -51,7 +57,7 @@ public class StockPriceServiceImpl extends RemoteServiceServlet implements Stock
 	@Override
 	public String[] loadSymbols() {
 		DB db = getDB();
-		Map<Integer, String> map = db.treeMap("symbols", Serializer.INTEGER, Serializer.STRING).createOrOpen();
+		Map<Integer, String> map = db.treeMap(SYMBOLS_TREEMAP_NAME, Serializer.INTEGER, Serializer.STRING).createOrOpen();
 		List<String> symbols = new ArrayList<String>();
 		Set<Integer> keys = map.keySet();
 		for(int key : keys) {
@@ -69,7 +75,7 @@ public class StockPriceServiceImpl extends RemoteServiceServlet implements Stock
 		synchronized (context) {
 			DB db = (DB)context.getAttribute("DB");
 			if(db == null) {
-				db = DBMaker.fileDB(new File("db")).closeOnJvmShutdown().make();
+				db = DBMaker.fileDB(new File(DB_FILENAME)).closeOnJvmShutdown().make();
 				context.setAttribute("DB", db);
 			}
 			return db;
