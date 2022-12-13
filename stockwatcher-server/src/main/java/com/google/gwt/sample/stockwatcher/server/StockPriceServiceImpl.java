@@ -26,7 +26,6 @@ public class StockPriceServiceImpl extends RemoteServiceServlet implements Stock
 	private static final long serialVersionUID = 4192379456341403664L;
 	private static final double MAX_PRICE = 100.0; // $100.00
 	private static final double MAX_PRICE_CHANGE = 0.02; // +/- 2%
-	private static final String SYMBOLS_TREEMAP_NAME = "symbols";
 
 	@Override
 	public StockPrice[] getPrices(String[] symbols) {
